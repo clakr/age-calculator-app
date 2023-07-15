@@ -1,0 +1,68 @@
+@font-face {
+  font-family: "Poppins";
+  src:
+    local("Poppins"),
+    url(/Poppins-Regular.ttf) format(TrueType);
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "Poppins";
+  src:
+    local("Poppins"),
+    url(/Poppins-Italic.ttf) format(TrueType);
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "Poppins";
+  src:
+    local("Poppins"),
+    url(/Poppins-Bold.ttf) format(TrueType);
+  font-weight: 700;
+}
+
+@font-face {
+  font-family: "Poppins";
+  src:
+    local("Poppins"),
+    url(/Poppins-BoldItalic.ttf) format(TrueType);
+  font-weight: 700;
+  font-style: italic;
+}
+
+@font-face {
+  font-family: "Poppins";
+  src:
+    local("Poppins"),
+    url(/Poppins-ExtraBold.ttf) format(TrueType);
+  font-weight: 800;
+}
+
+@font-face {
+  font-family: "Poppins";
+  src:
+    local("Poppins"),
+    url(/Poppins-ExtraBoldItalic.ttf) format(TrueType);
+  font-weight: 800;
+  font-style: italic;
+}
+
+:root {
+  --light-grey: #f0f0f0;
+  --grey: #716f6f;
+  --line: #dcdcdc;
+  --black: #151515;
+  --purple: #854dff;
+  --red: #ff5959;
+
+  background-color: var(--light-grey);
+  font-family: "Poppins", sans-serif;
+}
+
+main {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+}
