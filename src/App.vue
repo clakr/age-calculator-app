@@ -2,8 +2,10 @@
 import { inject, onBeforeMount, reactive, ref } from "vue";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
+import duration from "dayjs/plugin/duration";
 
 dayjs.extend(customParseFormat);
+dayjs.extend(duration);
 
 const addSRHeading = inject("addSRHeading") as () => void;
 
@@ -17,6 +19,12 @@ const date = reactive({
   year: "",
 });
 
+const result = reactive({
+  day: "",
+  month: "",
+  year: "",
+});
+
 const inputDayRef = ref<HTMLInputElement | null>(null);
 const inputMonthRef = ref<HTMLInputElement | null>(null);
 const inputYearRef = ref<HTMLInputElement | null>(null);
@@ -24,94 +32,15 @@ const inputYearRef = ref<HTMLInputElement | null>(null);
 function handleSubmit() {
   if (!inputDayRef.value || !inputMonthRef.value || !inputYearRef.value) return;
 
-  const inputArray = [
-    inputDayRef.value,
-    inputMonthRef.value,
-    inputYearRef.value,
-  ];
-
-  for (const input of inputArray) {
-    const inputSpan = input.nextElementSibling as HTMLSpanElement;
-
-    // check all inputs if empty
-    if (!input.value) {
-      input.setAttribute("required", "");
-      inputSpan.innerText = "This field is required";
-      continue;
-    }
-
-    const value = +input.value;
-    const currentYear = new Date().getFullYear();
-
-    // validation for `day` input
-    if (input.id === "day" && (value < 1 || value > 31)) {
-      input.setAttribute("min", "1");
-      input.setAttribute("max", "31");
-      inputSpan.innerText = "Must be a valid day";
-      continue;
-    }
-
-    // validation for `month` input
-    if (input.id === "month" && (value < 1 || value > 12)) {
-      input.setAttribute("min", "1");
-      input.setAttribute("max", "12");
-      inputSpan.innerText = "Must be a valid month";
-      continue;
-    }
-
-    // validation for `year` input
-    if (input.id === "year" && value > currentYear) {
-      input.setAttribute("max", currentYear.toString());
-      inputSpan.innerText = "Must be in the past";
-      continue;
-    }
-  }
-
-  for (const input of inputArray) {
-    if (!input.validity.valid) return;
-  }
-
-  const date = `${
-    inputYearRef.value.value
-  }-${inputMonthRef.value.value.padStart(
-    2,
-    "0"
-  )}-${inputDayRef.value.value.padStart(2, "0")}`;
-
-  const inputDaySpan = inputDayRef.value.nextElementSibling as HTMLSpanElement;
-
-  if (!dayjs(date, "YYYY-MM-DD", true).isValid()) {
-    inputDaySpan.style.display = "block";
-    inputDaySpan.innerText = "Must be a valid date";
-
-    for (const input of inputArray) {
-      const inputLabel = input.previousElementSibling as HTMLLabelElement;
-      inputLabel.style.color = "var(--red)";
-
-      input.style.borderColor = "var(--red)";
-    }
-
-    return;
-  }
-
-  inputDaySpan.style.display = "none";
-  for (const input of inputArray) {
-    const inputLabel = input.previousElementSibling as HTMLLabelElement;
-    inputLabel.style.color = "var(--grey)";
-
-    input.style.borderColor = "var(--line )";
-  }
-}
-
-function handleSubmit2() {
-  if (!inputDayRef.value || !inputMonthRef.value || !inputYearRef.value) return;
+  const inputDayElement = inputDayRef.value;
+  const inputMonthElement = inputMonthRef.value;
+  const inputYearElement = inputYearRef.value;
 
   day: {
-    const inputDayElement = inputDayRef.value;
-    const inputSpan = inputDayRef.value.nextElementSibling as HTMLSpanElement;
+    const inputSpan = inputDayElement.nextElementSibling as HTMLSpanElement;
 
     if (date.day === "") {
-      inputDayRef.value.classList.add("invalid");
+      inputDayElement.classList.add("invalid");
 
       inputDayElement.setAttribute("required", "");
 
@@ -122,7 +51,7 @@ function handleSubmit2() {
     const dayValue = +date.day;
 
     if (dayValue < 1 || dayValue > 31) {
-      inputDayRef.value.classList.add("invalid");
+      inputDayElement.classList.add("invalid");
 
       inputDayElement.setAttribute("min", "1");
       inputDayElement.setAttribute("max", "31");
@@ -130,14 +59,16 @@ function handleSubmit2() {
       inputSpan.innerText = "Must be a valid day";
       break day;
     }
+
+    inputDayElement.classList.remove("invalid");
+    inputSpan.innerText = "";
   }
 
   month: {
-    const inputMonthElement = inputMonthRef.value;
-    const inputSpan = inputMonthRef.value.nextElementSibling as HTMLSpanElement;
+    const inputSpan = inputMonthElement.nextElementSibling as HTMLSpanElement;
 
     if (date.month === "") {
-      inputMonthRef.value.classList.add("invalid");
+      inputMonthElement.classList.add("invalid");
 
       inputMonthElement.setAttribute("required", "");
 
@@ -148,7 +79,7 @@ function handleSubmit2() {
     const monthValue = +date.month;
 
     if (monthValue < 1 || monthValue > 12) {
-      inputMonthRef.value.classList.add("invalid");
+      inputMonthElement.classList.add("invalid");
 
       inputMonthElement.setAttribute("min", "1");
       inputMonthElement.setAttribute("max", "12");
@@ -156,14 +87,16 @@ function handleSubmit2() {
       inputSpan.innerText = "Must be a valid month";
       break month;
     }
+
+    inputMonthElement.classList.remove("invalid");
+    inputSpan.innerText = "";
   }
 
   year: {
-    const inputYearElement = inputYearRef.value;
-    const inputSpan = inputYearRef.value.nextElementSibling as HTMLSpanElement;
+    const inputSpan = inputYearElement.nextElementSibling as HTMLSpanElement;
 
     if (date.year === "") {
-      inputYearRef.value.classList.add("invalid");
+      inputYearElement.classList.add("invalid");
 
       inputYearElement.setAttribute("required", "");
 
@@ -172,26 +105,71 @@ function handleSubmit2() {
     }
 
     const yearValue = +date.year;
+    const currentYear = new Date().getFullYear();
 
-    if (yearValue < 1 || yearValue > 12) {
-      inputYearRef.value.classList.add("invalid");
+    if (yearValue < 1900 || yearValue > currentYear) {
+      inputYearElement.classList.add("invalid");
 
-      inputYearElement.setAttribute("min", "1");
-      inputYearElement.setAttribute("max", "12");
+      inputYearElement.setAttribute("min", "1900");
+      inputYearElement.setAttribute("max", currentYear.toString());
 
       inputSpan.innerText = "Must be a valid year";
       break year;
     }
+
+    inputYearElement.classList.remove("invalid");
+    inputSpan.innerText = "";
   }
+
+  if (
+    inputDayElement.classList.contains("invalid") ||
+    inputMonthElement.classList.contains("invalid") ||
+    inputYearElement.classList.contains("invalid")
+  )
+    return;
+
+  const inputDate = `${date.year}-${String(date.month).padStart(
+    2,
+    "0"
+  )}-${String(date.day).padStart(2, "0")}`;
+
+  if (!dayjs(inputDate, "YYYY-MM-DD", true).isValid()) {
+    inputDayElement.classList.add("invalid");
+    inputMonthElement.classList.add("invalid");
+    inputYearElement.classList.add("invalid");
+
+    const inputDaySpan = inputDayElement.nextElementSibling as HTMLSpanElement;
+
+    inputDaySpan.innerText = "Must be a valid date";
+
+    return;
+  }
+
+  const now = new Date();
+  const birthday = new Date(inputDate);
+
+  const years = (now.getFullYear() - birthday.getFullYear()).toString();
+  const months = (now.getMonth() - birthday.getMonth()).toString();
+  const days = (now.getDate() - birthday.getDate()).toString();
+
+  result.year = years;
+  result.day = days;
+  result.month = months;
 }
 </script>
 
 <template>
   <section>
-    <form id="form" @submit.prevent="handleSubmit2">
+    <form id="form" @submit.prevent="handleSubmit">
       <fieldset>
         <label for="day">Day</label>
-        <input id="day" ref="inputDayRef" v-model="date.day" type="number" />
+        <input
+          id="day"
+          ref="inputDayRef"
+          v-model="date.day"
+          type="number"
+          placeholder="DD"
+        />
         <span />
       </fieldset>
       <fieldset>
@@ -201,12 +179,19 @@ function handleSubmit2() {
           ref="inputMonthRef"
           v-model="date.month"
           type="number"
+          placeholder="MM"
         />
         <span />
       </fieldset>
       <fieldset>
         <label for="year">Year</label>
-        <input id="year" ref="inputYearRef" v-model="date.year" type="number" />
+        <input
+          id="year"
+          ref="inputYearRef"
+          v-model="date.year"
+          type="number"
+          placeholder="YYYY"
+        />
         <span />
       </fieldset>
     </form>
@@ -216,9 +201,15 @@ function handleSubmit2() {
       </button>
     </div>
     <div class="container--age">
-      <span><strong>--</strong> years</span>
-      <span><strong>--</strong> months</span>
-      <span><strong>--</strong> days</span>
+      <span
+        ><strong>{{ result.year || "--" }}</strong> years</span
+      >
+      <span
+        ><strong>{{ result.month || "--" }}</strong> months</span
+      >
+      <span
+        ><strong>{{ result.day || "--" }}</strong> days</span
+      >
     </div>
   </section>
 </template>
@@ -226,7 +217,8 @@ function handleSubmit2() {
 <style lang="scss" scoped>
 section {
   background-color: white;
-  width: 34.3rem;
+  min-width: 34.3rem;
+  max-width: 84rem;
   display: flex;
   flex-direction: column;
   row-gap: 3.2rem;
@@ -245,13 +237,20 @@ form {
     flex: 1 1 0px;
 
     span {
+      display: none;
       color: var(--red);
       font-size: 1.2rem;
       font-style: italic;
     }
 
-    &:has(input.invalid) label {
-      color: var(--red);
+    &:has(input.invalid) {
+      span {
+        display: inline-block;
+      }
+
+      label {
+        color: var(--red);
+      }
     }
   }
 }
@@ -277,6 +276,14 @@ input {
   &.invalid {
     border-color: var(--red);
   }
+
+  &:is(:active, :hover, :focus) {
+    border-color: var(--purple);
+  }
+
+  &::placeholder {
+    opacity: 0.5;
+  }
 }
 
 .container--button {
@@ -301,6 +308,10 @@ button {
   padding: 2rem;
   border-radius: 100%;
   z-index: 1;
+
+  &:is(:active, :hover, :focus) {
+    background-color: var(--black);
+  }
 }
 
 img {
@@ -326,5 +337,55 @@ span {
 
 strong {
   color: var(--purple);
+}
+
+@media screen and (min-width: 768px) {
+  section {
+    row-gap: unset;
+    padding: 5.6rem;
+    border-bottom-right-radius: 20rem;
+  }
+
+  form {
+    column-gap: 3.2rem;
+
+    fieldset {
+      row-gap: 0.8rem;
+      flex: 0 0 16rem;
+
+      span {
+        display: none;
+        color: var(--red);
+        font-size: 1.4rem;
+      }
+    }
+  }
+
+  label {
+    color: var(--grey);
+    font-size: 1.4rem;
+    letter-spacing: 0.35rem;
+  }
+
+  input {
+    color: var(--black);
+    font-size: 3.2rem;
+    letter-spacing: 0.032rem;
+    padding-inline: 2.4rem;
+  }
+
+  .container--button {
+    place-items: flex-end;
+  }
+
+  img {
+    width: 4.4rem;
+    height: 4.4rem;
+  }
+
+  .container--age {
+    font-size: 10.4rem;
+    letter-spacing: -0.208rem;
+  }
 }
 </style>
