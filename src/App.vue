@@ -148,13 +148,23 @@ function handleSubmit() {
   const now = new Date();
   const birthday = new Date(inputDate);
 
-  const years = (now.getFullYear() - birthday.getFullYear()).toString();
-  const months = (now.getMonth() - birthday.getMonth()).toString();
-  const days = (now.getDate() - birthday.getDate()).toString();
+  let years = now.getFullYear() - birthday.getFullYear();
+  let months = now.getMonth() - birthday.getMonth();
+  let days = now.getDate() - birthday.getDate();
 
-  result.year = years;
-  result.day = days;
-  result.month = months;
+  if (!months || months < 0) {
+    years--;
+    months += 12;
+  }
+
+  if (!days || days < 0) {
+    months--;
+    days += 31;
+  }
+
+  result.year = years.toString();
+  result.day = days.toString();
+  result.month = months.toString();
 }
 </script>
 
